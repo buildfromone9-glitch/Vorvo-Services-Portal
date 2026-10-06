@@ -2222,29 +2222,36 @@ const App = {
         this.state.ipLocation = 'unavailable';
       });
 
-    // Check Supabase auth session FIRST so admin login renders immediately
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session?.user) this.state.adminUser = session.user;
+    // getSession() can hit the network (refreshing a stored login), so public pages must
+    // never wait on it — a slow or unreachable Supabase would leave the page blank.
+    // Only the admin route waits, and only briefly.
+    const sessionPromise = supabaseClient.auth.getSession()
+      .then(({ data }) => {
+        if (data?.session?.user) this.state.adminUser = data.session.user;
+      })
+      .catch(err => console.warn('[Vorvo] Auth session check failed:', err));
 
-    // Listen for auth state changes
     supabaseClient.auth.onAuthStateChange((_event, session) => {
       const newUser = session?.user || null;
       const oldUser = this.state.adminUser;
-      
-      // Only re-render if the actual authentication status changed!
-      const statusChanged = (newUser === null && oldUser !== null) || 
-                            (newUser !== null && oldUser === null) || 
+
+      const statusChanged = (newUser === null && oldUser !== null) ||
+                            (newUser !== null && oldUser === null) ||
                             (newUser && oldUser && newUser.id !== oldUser.id);
-                            
+
       if (statusChanged) {
         this.state.adminUser = newUser;
-        this.render();
-        showLegalAcceptanceGate();
+        if (this.getRoute() === 'admin') {
+          this.render();
+          showLegalAcceptanceGate();
+        }
       }
     });
 
-    // Only load agreement data on agreement route (not admin)
     const currentRoute = this.getRoute();
+    if (currentRoute === 'admin') {
+      await Promise.race([sessionPromise, new Promise(r => setTimeout(r, 4000))]);
+    }
     if (currentRoute === 'agreement') {
       await loadAgreement();
       this.loadSignedState();
