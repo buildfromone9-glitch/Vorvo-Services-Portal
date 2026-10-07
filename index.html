@@ -1263,6 +1263,47 @@
   .site-footer__legal-links a:hover {
     color: #FFFFFF;
   }
+  .site-footer__entity {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #9A9A9A;
+  }
+
+  /* ============================================================
+     ACCESSIBILITY
+     ============================================================ */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100px;
+    z-index: 10000;
+    padding: 0.75rem 1.25rem;
+    background: var(--gold);
+    color: #111111;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  .skip-link:focus { top: 1rem; }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  .doc-wrap h2 { scroll-margin-top: 6rem; }
 
   /* ============================================================
      TRACK PAGE OVERHAUL (Luxury Centered Floating Island)
@@ -1921,6 +1962,8 @@
     </div>
   </div>
 
+  <!-- Skip link focuses content via JS because this site uses #/ hash routing. -->
+  <a href="javascript:void(0)" class="skip-link" onclick="const t = document.querySelector('#app main, #app header + section, #app header + *'); if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }">Skip to main content</a>
   <div id="app"></div>
   <div id="legal-acceptance-gate" hidden>
     <div class="legal-acceptance-gate__card" role="dialog" aria-modal="true" aria-labelledby="legal-acceptance-title">
@@ -1958,8 +2001,8 @@ const supabaseKey = "sb_publishable_l165SNZrHJ4XqQh46bqS9g_d9L-EsJX";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 const STORE_KEY = 'vorvo_signed_v1';
 const LEGAL_ACCEPTANCE_KEY = 'vorvo_legal_acceptance_v6';
-const LEGAL_ACCEPTANCE_VERSION = '2026-08-15';
-const PRIVACY_POLICY_VERSION = '2026-08-15';
+const LEGAL_ACCEPTANCE_VERSION = '2026-10-06';
+const PRIVACY_POLICY_VERSION = '2026-10-06';
 const LABOR_CHECKOUT_ENDPOINT = '/api/labor-services/checkout';
 const LABOR_SERVICE_CATALOG = [
   { id: 'contractor-research', name: 'Contractor Research', price: 49 },
@@ -2478,6 +2521,7 @@ const App = {
     switch (route) {
       case 'privacy': html += renderPrivacy(); break;
       case 'terms': html += renderTerms(); break;
+      case 'accessibility': html += renderAccessibility(); break;
       case 'client-agreement': html += renderClientAgreement(); break;
       case 'agreement': {
         const _hash = window.location.hash;
@@ -2573,7 +2617,7 @@ function renderHeader(route) {
         </div>
       </header>
     `;
-  } else if (route === 'portal') {
+  } else if (!SURPLUS_CHROME_ROUTES.includes(route)) {
     return `
       <header class="site-header no-print">
         <div class="site-header__inner">
@@ -2633,9 +2677,9 @@ function renderPrivacy() {
     <main class="doc-wrap" style="max-width:760px;margin:0 auto;padding:4rem 2rem;">
       <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Legal</div>
       <h1 style="font-family:var(--serif);font-size:2.4rem;margin:0 0 0.5rem;">Privacy Policy</h1>
-      <p style="color:var(--ink-mute);font-size:0.85rem;margin:0 0 3rem;">Vorvo Services · vorvoservices.com · Effective Date: June 8, 2026</p>
+      <p style="color:var(--ink-mute);font-size:0.85rem;margin:0 0 3rem;">${BUSINESS_LEGAL_NAME} · vorvoservices.com · Effective Date: October 6, 2026</p>
 
-      <p>Vorvo Services ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy describes how we collect, use, disclose, and safeguard your personal information when you visit our website, use our portals, or engage with our property and labor services.</p>
+      <p>${BUSINESS_LEGAL_NAME} ("Vorvo Services," "we," "us," or "our") is committed to protecting your privacy. This Privacy Policy describes how we collect, use, disclose, and safeguard your personal information when you visit our website, use our portals, or engage with our property and labor services.</p>
       <p>Please read this Privacy Policy carefully. By accessing or using our website, you agree to the practices described in this policy.</p>
 
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">1. Who We Are</h2>
@@ -2684,22 +2728,33 @@ function renderPrivacy() {
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">4. How We Share Your Information</h2>
       <p>We do not sell, rent, license, or trade your personal information to third parties for marketing or advertising purposes. We share your information only in the following limited circumstances:</p>
       <ul style="line-height:2;padding-left:1.5rem;color:var(--ink-soft);">
-        <li><strong>Infrastructure and Data Processors:</strong> We share data with third-party providers that help us operate the website and deliver requested services. These include <strong>Supabase</strong> for database, authentication, and file-storage infrastructure; Vercel for website hosting and serverless delivery; and Resend for transactional email delivery. These providers process information on our behalf under their applicable terms and security practices.</li>
+        <li><strong>Infrastructure and Data Processors:</strong> We share data with third-party providers that help us operate the website and deliver requested services. These providers process information on our behalf under their applicable terms and security practices:
+          <ul style="line-height:1.9;padding-left:1.5rem;margin-top:0.5rem;">
+            <li><strong>Supabase</strong> – database, authentication, and file storage (including uploaded photos).</li>
+            <li><strong>Vercel</strong> and <strong>GitHub Pages</strong> – website hosting and serverless functions.</li>
+            <li><strong>Formspree</strong> – delivery of form submissions (such as quote requests) to our team.</li>
+            <li><strong>Resend</strong> – transactional email delivery (such as agreements and invoices).</li>
+            <li><strong>Square</strong> – payment processing. Square collects your card details directly; we do not receive or store full card numbers.</li>
+            <li><strong>IPinfo</strong> – when you load our website, your IP address is sent to IPinfo to determine your approximate location (city/region/country). We use this for agreement audit logs and fraud prevention.</li>
+            <li><strong>Google Fonts</strong> and <strong>jsDelivr</strong> – delivery of fonts and website code. Your browser connects to these services directly, which shares your IP address and browser information with them.</li>
+          </ul>
+        </li>
         <li><strong>Independent Contractors:</strong> For Labor Coordination Services, we share your job details and job address with independent third-party service providers to generate accurate quotes and facilitate coordination of the requested work.</li>
         <li><strong>Legal Requirements:</strong> We may disclose your information if required to do so by law, court order, or subpoena, or if we believe in good faith that such action is necessary to comply with legal obligations or protect our rights and safety.</li>
         <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, reorganization, or sale of assets, your information may be transferred to the successor entity, subject to the terms of this Privacy Policy.</li>
       </ul>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">5. Telephony and SMS/Text Message Consent</h2>
-      <p>If you provide your phone number to Vorvo Services (via any of our submission forms, or by calling/texting us at <strong>(832) 735-0603</strong>), you consent to receive communications from us. These communications may include phone calls, voicemails, and text messages (SMS) related to your service requests, quotes, and agreements.</p>
+      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">5. Phone Calls and Text Messages</h2>
+      <p>If you give us your phone number, we use it only to contact you by phone or voicemail about your service requests, quotes, and agreements. We do not send marketing, promotional, or automated text messages, and we do not use your number for telemarketing.</p>
       <ul style="line-height:2;padding-left:1.5rem;color:var(--ink-soft);">
-        <li><strong>Consent:</strong> We do not share your text messaging/SMS opt-in consent with unrelated third parties or affiliates for their own marketing purposes.</li>
-        <li><strong>Opt-Out:</strong> You can opt out of receiving text messages at any time by replying <strong>STOP</strong> to any message you receive from us.</li>
+        <li><strong>Texts you send us:</strong> If you text us at <strong>(832) 735-0603</strong>, we may reply to your message about your request. Reply <strong>STOP</strong> at any time and we will not text you again.</li>
+        <li><strong>No sharing:</strong> We do not sell or share your phone number with third parties for their marketing purposes.</li>
       </ul>
 
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">6. Cookies and Local Storage</h2>
       <p>We do not use advertising, tracking, or targeting cookies. We do not use third-party analytics services that track your behavior across other websites. Our hosting, database, authentication, and file-storage provider, Supabase, may process technical information necessary to provide those services. Please review Supabase's privacy documentation for information about its independent processing practices.</p>
-      <p>We use browser <strong>localStorage</strong> solely to preserve your session state and keep you logged in or tracked within our portal while you navigate our site.</p>
+      <p>We use browser <strong>localStorage</strong> and <strong>sessionStorage</strong> solely to remember your acceptance of our policies, preserve your session state, and keep you logged in or tracked within our portal while you navigate our site.</p>
+      <p><strong>Do Not Track:</strong> Because we do not track you across third-party websites or over time for advertising, we do not change our practices in response to "Do Not Track" browser signals. We honor Global Privacy Control signals as a request not to sell or share your personal data, which we already do not do.</p>
 
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">7. Data Security</h2>
       <p>We implement commercially reasonable administrative, technical, and physical security measures designed to secure your personal information from accidental loss and unauthorized access.</p>
@@ -2726,7 +2781,8 @@ function renderPrivacy() {
         <li><strong>Right to Deletion:</strong> You have the right to request the deletion of your personal data, subject to our legal and contractual retention obligations (such as active agreements or 5-year record keeping).</li>
         <li><strong>Right to Opt-Out:</strong> Because we do not sell your personal data or use it for targeted advertising, opt-out rights for data sales do not apply.</li>
       </ul>
-      <p>To exercise any of these rights, please submit a request to <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a>. We will verify your identity before processing your request.</p>
+      <p>To exercise any of these rights, please submit a request to <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a> or write to us at the mailing address below. We will verify your identity before processing your request and will respond within 45 days. We will not discriminate against you for exercising your rights.</p>
+      <p><strong>Appeals:</strong> If we decline your request, you may appeal by replying to our decision with the subject line "Privacy Appeal." We will respond to your appeal within 60 days. If you are not satisfied with the result of your appeal, you may contact the Texas Attorney General at <a href="https://www.texasattorneygeneral.gov/consumer-protection" target="_blank" rel="noopener" style="color:var(--gold);">texasattorneygeneral.gov</a>.</p>
 
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">10. Children's Privacy</h2>
       <p>Our website and services are not intended for or targeted to individuals under the age of 18. We do not knowingly collect personal information from minors. If you believe we have inadvertently collected information from someone under 18, please contact us immediately at <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a> so we can remove it.</p>
@@ -2737,13 +2793,52 @@ function renderPrivacy() {
       <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">12. Contact Us</h2>
       <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:</p>
       <ul style="line-height:2;padding-left:1.5rem;color:var(--ink-soft);">
+        <li><strong>Company:</strong> ${BUSINESS_LEGAL_NAME}</li>
+        <li><strong>Mailing address:</strong> ${BUSINESS_ADDRESS}</li>
         <li><strong>Email:</strong> <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a></li>
         <li><strong>Phone:</strong> (832) 735-0603</li>
         <li><strong>Website:</strong> vorvoservices.com</li>
       </ul>
 
       <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:0.8rem;color:var(--ink-mute);">
-        <p>This Privacy Policy was last updated on June 8, 2026. Vorvo Services operates under United States law. This policy does not constitute legal advice.</p>
+        <p>This Privacy Policy was last updated on October 6, 2026. Vorvo Services operates under United States law. This policy does not constitute legal advice.</p>
+        <p style="margin-top:0.5rem;"><a href="#/portal" style="color:var(--gold-soft);">← Back to Home</a></p>
+      </div>
+    </main>
+  `;
+}
+
+function renderAccessibility() {
+  const h2 = 'font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;';
+  const ul = 'line-height:1.9;padding-left:1.5rem;color:var(--ink-soft);';
+  return `
+    <main class="doc-wrap" style="max-width:760px;margin:0 auto;padding:4rem 2rem;">
+      <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Legal</div>
+      <h1 style="font-family:var(--serif);font-size:2.4rem;margin:0 0 0.5rem;">Accessibility Statement</h1>
+      <p style="color:var(--ink-mute);font-size:0.85rem;margin:0 0 3rem;">${BUSINESS_LEGAL_NAME} · vorvoservices.com · Last reviewed: October 6, 2026</p>
+
+      <p>Vorvo Services is committed to making our website usable by everyone, including people with disabilities. We aim to conform to the <strong>Web Content Accessibility Guidelines (WCAG) 2.1, Level AA</strong>.</p>
+
+      <h2 style="${h2}">What We Do</h2>
+      <ul style="${ul}">
+        <li>Provide text descriptions for meaningful images.</li>
+        <li>Label form fields and support keyboard-only navigation, including a "Skip to main content" link and visible focus indicators.</li>
+        <li>Use readable color contrast and respect your device's reduced-motion setting.</li>
+        <li>Review new pages and features for accessibility before they are published.</li>
+      </ul>
+
+      <h2 style="${h2}">Known Limitations</h2>
+      <p>Some older pages and documents, such as signature pads used to sign agreements, may not yet be fully accessible. If you have trouble with any part of our website, we will provide the information or service another way, such as by phone or email, and can help you complete a request or sign an agreement.</p>
+
+      <h2 style="${h2}">Feedback and Assistance</h2>
+      <p>If you run into an accessibility barrier, please let us know. We aim to respond within 2 business days.</p>
+      <ul style="${ul}">
+        <li><strong>Phone:</strong> (832) 735-0603</li>
+        <li><strong>Email:</strong> <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a></li>
+        <li><strong>Mail:</strong> ${BUSINESS_LEGAL_NAME}, ${BUSINESS_ADDRESS}</li>
+      </ul>
+
+      <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:0.8rem;color:var(--ink-mute);">
         <p style="margin-top:0.5rem;"><a href="#/portal" style="color:var(--gold-soft);">← Back to Home</a></p>
       </div>
     </main>
@@ -2751,31 +2846,83 @@ function renderPrivacy() {
 }
 
 function renderTerms() {
+  const h2 = 'font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;';
+  const ul = 'line-height:1.9;padding-left:1.5rem;color:var(--ink-soft);';
   return `
     <main class="doc-wrap" style="max-width:760px;margin:0 auto;padding:4rem 2rem;">
       <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Legal</div>
       <h1 style="font-family:var(--serif);font-size:2.4rem;margin:0 0 0.5rem;">Terms of Service</h1>
-      <p style="color:var(--ink-mute);font-size:0.85rem;margin:0 0 3rem;">Vorvo Services · vorvoservices.com · Effective Date: June 8, 2026</p>
+      <p style="color:var(--ink-mute);font-size:0.85rem;margin:0 0 3rem;">${BUSINESS_LEGAL_NAME} · vorvoservices.com · Effective Date: October 6, 2026</p>
 
-      <p>Welcome to Vorvo Services ("we," "us," or "our"). By accessing or using our website, portals, or services, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+      <p>These Terms of Service ("Terms") are an agreement between you and ${BUSINESS_LEGAL_NAME} ("Vorvo," "we," "us," or "our"). By accessing or using our website, portals, or services, you agree to these Terms and to our <a href="#/privacy" style="color:var(--gold);">Privacy Policy</a>. If you do not agree, please do not use our website or services.</p>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">1. Description of Services</h2>
-      <p>Vorvo Services operates as an informational resource and nationwide coordination layer. We provide research, procurement, and logistics coordination services to help clients find, compare, and coordinate with independent third-party service providers. <strong>Vorvo Services is not a contractor, does not perform direct physical labor or construction, and does not employ service providers.</strong></p>
+      <h2 style="${h2}">1. Eligibility</h2>
+      <p>You must be at least 18 years old and able to enter into a binding contract to use our services. If you use our services on behalf of a business or another person, you confirm that you are authorized to bind them to these Terms.</p>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">2. Relationship of Parties</h2>
-      <p>All service providers recommended or coordinated by Vorvo are independent third-party contractors. Any agreement for actual physical labor, construction, or trade services is strictly and solely between the client and the selected contractor. Vorvo is not a party to, and is not responsible for, the performance, quality, safety, or outcome of any work performed by independent contractors.</p>
+      <h2 style="${h2}">2. Description of Services</h2>
+      <p>Vorvo operates as an informational resource and nationwide coordination layer. We provide research, procurement, and logistics coordination services to help clients find, compare, and coordinate with independent third-party service providers. <strong>Vorvo is not a contractor, does not perform physical labor or construction, and does not employ service providers.</strong></p>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">3. Fees and Payments</h2>
-      <p>Clients pay Vorvo Services directly for selected research and coordination services. Contractors are paid directly by clients for any actual work performed. Vorvo does not collect labor payments on behalf of independent contractors, nor do we charge contractors referral fees or commissions.</p>
+      <h2 style="${h2}">3. Relationship of Parties</h2>
+      <p>All service providers recommended or coordinated by Vorvo are independent third-party contractors. Any agreement for physical labor, construction, or trade services is solely between you and the provider you select. Vorvo is not a party to, and is not responsible for, the performance, quality, safety, or outcome of any work performed by independent providers. You are responsible for deciding whether to hire a provider and for confirming any license, insurance, or permit that the work may require.</p>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">4. Limitation of Liability</h2>
-      <p>To the maximum extent permitted by law, Vorvo Services shall not be liable for any property damage, personal injury, lost profits, or any indirect, special, or consequential damages arising out of or related to the services of independent third-party contractors. Vorvo's total cumulative liability for any claim shall not exceed $100.00.</p>
+      <h2 style="${h2}">4. Fees and Payments</h2>
+      <p>You pay Vorvo directly for the research and coordination services you select, at the prices shown before you confirm your order or sign your Client Service Agreement. You pay providers directly for any work they perform. Vorvo does not collect labor payments on behalf of providers and does not charge providers referral fees or commissions.</p>
+      <p>Card payments are processed by our payment processor, Square. We do not receive or store your full card number.</p>
 
-      <h2 style="font-family:var(--serif);font-size:1.3rem;margin:2rem 0 0.75rem;border-bottom:1px solid var(--rule);padding-bottom:0.5rem;">5. Governing Law</h2>
-      <p>These Terms of Service are governed by and construed in accordance with the laws of the State of Texas, without regard to conflict of law principles. Any dispute arising under these Terms shall be resolved exclusively in the state or federal courts located in Texas.</p>
+      <h2 style="${h2}">5. Cancellations and Refunds</h2>
+      <ul style="${ul}">
+        <li><strong>Before work begins:</strong> You may cancel at any time before we begin work on your request and receive a <strong>full refund</strong>.</li>
+        <li><strong>After work begins:</strong> If you cancel after we have begun, you pay only for the services we have already started or completed, and we refund the amount paid for any selected services we have not yet started.</li>
+        <li><strong>How to cancel:</strong> Email <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a> or call (832) 735-0603 with your name and tracking ID.</li>
+        <li><strong>Timing:</strong> Approved refunds are issued to your original payment method within 10 business days. Your bank may take additional time to post the credit.</li>
+      </ul>
+      <p>Payments you make to independent providers are governed by your agreement with that provider, not by this policy.</p>
+
+      <h2 style="${h2}">6. Electronic Communications, Records, and Signatures</h2>
+      <p>By using our services, you agree to receive agreements, disclosures, notices, receipts, and other records from us electronically, including by email and on this website, and to sign agreements electronically. Electronic signatures and records have the same legal effect as handwritten signatures and paper records under the federal E-SIGN Act and the Texas Uniform Electronic Transactions Act.</p>
+      <ul style="${ul}">
+        <li>To view and keep records, you need a device with a current web browser, an email account, and the ability to download or print web pages or PDFs.</li>
+        <li>You may request a paper copy of any agreement or record at no charge by contacting us.</li>
+        <li>You may withdraw your consent to electronic records at any time by contacting us. Withdrawing consent does not affect the validity of records or signatures provided before the withdrawal, but we may be unable to continue providing services electronically.</li>
+      </ul>
+
+      <h2 style="${h2}">7. Your Submissions</h2>
+      <p>You agree that the information you provide is accurate and that you have the right to share any photos, documents, or details you submit. You grant Vorvo permission to use and share your submissions with independent providers as needed to research, quote, and coordinate the services you request. You agree not to misuse the website, interfere with its operation, attempt to access data that is not yours, or submit unlawful, false, or harmful content.</p>
+
+      <h2 style="${h2}">8. Intellectual Property</h2>
+      <p>The website, including its text, design, graphics, and code, is owned by Vorvo or its licensors and is protected by intellectual property laws. You may view and print pages for your personal, non-commercial use. You may not copy, modify, or distribute website content without our written permission.</p>
+
+      <h2 style="${h2}">9. Third-Party Services and Links</h2>
+      <p>Our website and services may link to or rely on third-party websites and services, such as payment processing. We are not responsible for third-party content, terms, or practices.</p>
+
+      <h2 style="${h2}">10. Disclaimer of Warranties</h2>
+      <p>To the maximum extent permitted by law, our website and services are provided "as is" and "as available." We do not guarantee that any provider will be available, respond, or meet your expectations, or that quotes will be obtained within a particular time. We disclaim all implied warranties, including merchantability, fitness for a particular purpose, and non-infringement, except where such a disclaimer is prohibited by law.</p>
+
+      <h2 style="${h2}">11. Limitation of Liability</h2>
+      <p>To the maximum extent permitted by law, Vorvo is not liable for any property damage, personal injury, lost profits, or indirect, special, incidental, or consequential damages arising out of or related to the services of independent third-party providers. Vorvo's total liability for any claim relating to our services will not exceed the greater of $100.00 or the amount you paid Vorvo for the services giving rise to the claim. Nothing in these Terms limits any right you have that cannot be limited or waived under applicable law, including the Texas Deceptive Trade Practices Act.</p>
+
+      <h2 style="${h2}">12. Indemnification</h2>
+      <p>To the extent permitted by law, you agree to indemnify and hold Vorvo harmless from claims, losses, and expenses, including reasonable attorneys' fees, arising from your misuse of the website, your violation of these Terms, or your agreements and dealings with independent providers.</p>
+
+      <h2 style="${h2}">13. Governing Law</h2>
+      <p>These Terms are governed by the laws of the State of Texas, without regard to conflict of law principles. Any dispute arising under these Terms shall be resolved exclusively in the state or federal courts located in Texas.</p>
+
+      <h2 style="${h2}">14. Changes to These Terms</h2>
+      <p>We may update these Terms from time to time. When we do, we will revise the effective date above. Changes apply going forward and do not affect orders or signed agreements already in place. Your continued use of the website after an update means you accept the revised Terms.</p>
+
+      <h2 style="${h2}">15. Entire Agreement and Severability</h2>
+      <p>These Terms, together with our Privacy Policy and any Client Service Agreement you sign, are the entire agreement between you and Vorvo regarding our services. If these Terms conflict with a signed Client Service Agreement, the signed agreement controls. If any provision is found unenforceable, the remaining provisions remain in effect.</p>
+
+      <h2 style="${h2}">16. Contact Us</h2>
+      <ul style="${ul}">
+        <li><strong>Company:</strong> ${BUSINESS_LEGAL_NAME}</li>
+        <li><strong>Mailing address:</strong> ${BUSINESS_ADDRESS}</li>
+        <li><strong>Email:</strong> <a href="mailto:help@vorvoservices.com" style="color:var(--gold);">help@vorvoservices.com</a></li>
+        <li><strong>Phone:</strong> (832) 735-0603</li>
+      </ul>
 
       <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:0.8rem;color:var(--ink-mute);">
-        <p>These Terms of Service were last updated on June 8, 2026. Vorvo Services operates under United States law.</p>
+        <p>These Terms of Service were last updated on October 6, 2026.</p>
         <p style="margin-top:0.5rem;"><a href="#/portal" style="color:var(--gold-soft);">← Back to Home</a></p>
       </div>
     </main>
@@ -2917,7 +3064,7 @@ function renderClientAgreement() {
           <p style="font-family: var(--mono); font-size: 0.8rem; margin: 0.25rem 0 0; color: #666666;">Effective Date: Upon Execution</p>
         </div>
 
-        <p>This Client Service Agreement (the "Agreement") is entered into between <strong>Vorvo Services</strong> ("Vorvo" or the "Company"), a Texas-based service coordination layer, and the undersigned individual or entity ("Client"). By signing below, the Client agrees to every term of this Agreement.</p>
+        <p>This Client Service Agreement (the "Agreement") is entered into between <strong>${BUSINESS_LEGAL_NAME}</strong> ("Vorvo" or the "Company"), a Texas-based service coordination company, and the undersigned individual or entity ("Client"). By signing below, the Client agrees to every term of this Agreement.</p>
 
         <h3 style="font-family: var(--serif); font-size: 1.15rem; color: var(--gold-dark); border-bottom: 1px solid #E0D8CC; padding-bottom: 0.25rem; margin-top: 2rem;">1. What Vorvo Does</h3>
         <p>Vorvo provides research, procurement, and coordination services to its Clients. Vorvo’s role is strictly limited to performing the specific coordination and research tasks selected by the Client via the checklist model, which may include:</p>
@@ -3067,6 +3214,22 @@ function renderClientAgreement() {
   `;
 }
 
+const BUSINESS_LEGAL_NAME = 'Vorvo Services, LLC';
+const BUSINESS_ADDRESS = '5900 Balcones Drive, Suite 100, Austin, TX 78731';
+// Routes that keep the surplus-recovery header/footer; every other public page uses the main site chrome.
+const SURPLUS_CHROME_ROUTES = ['surplus', 'guide', 'agreement', 'assignment', 'admin'];
+
+function footerLegalLinks() {
+  return `
+          <div class="site-footer__legal-links">
+            <a href="#/client-agreement">Client Service Agreement</a>
+            <a href="#/terms">Terms of Service</a>
+            <a href="#/privacy">Privacy Policy</a>
+            <a href="#/accessibility">Accessibility</a>
+          </div>
+          <div class="site-footer__entity">© ${new Date().getFullYear()} ${BUSINESS_LEGAL_NAME} · ${BUSINESS_ADDRESS}</div>`;
+}
+
 function renderFooter(route) {
   if (route === 'vorvo') {
     return `
@@ -3097,15 +3260,11 @@ function renderFooter(route) {
         </div>
         <div class="site-footer__legal">
           This site is an informational resource prepared by Vorvo Services. <strong>We are a coordination service, not a direct labor provider.</strong> All jobs are completed by independent, third-party service providers.
-          <div class="site-footer__legal-links">
-            <a href="#/client-agreement">Client Service Agreement</a>
-            <a href="#/terms">Terms of Service</a>
-            <a href="#/privacy">Privacy Policy</a>
-          </div>
+          ${footerLegalLinks()}
         </div>
       </footer>
     `;
-  } else if (route === 'property-management') {
+  } else if (route === 'property-management' || route === 'asset-acquirement') {
     return `
       <footer class="site-footer no-print">
         <div class="site-footer__inner">
@@ -3132,15 +3291,11 @@ function renderFooter(route) {
         </div>
         <div class="site-footer__legal">
           This site is an informational resource prepared by Vorvo Services. <strong>We are a asset-acquirement coordination layer, not a licensed brokerage, asset-acquirement firm, or legal advisory firm.</strong>
-          <div class="site-footer__legal-links">
-            <a href="#/client-agreement">Client Service Agreement</a>
-            <a href="#/terms">Terms of Service</a>
-            <a href="#/privacy">Privacy Policy</a>
-          </div>
+          ${footerLegalLinks()}
         </div>
       </footer>
     `;
-  } else if (route === 'portal') {
+  } else if (!SURPLUS_CHROME_ROUTES.includes(route)) {
     return `
       <footer class="site-footer no-print">
         <div class="site-footer__inner">
@@ -3168,12 +3323,8 @@ function renderFooter(route) {
           </div>
         </div>
         <div class="site-footer__legal">
-          © 2026 Vorvo Services. All rights reserved.
-          <div class="site-footer__legal-links">
-            <a href="#/client-agreement">Client Service Agreement</a>
-            <a href="#/terms">Terms of Service</a>
-            <a href="#/privacy">Privacy Policy</a>
-          </div>
+          <strong>We are a coordination service, not a contractor.</strong> All work is performed by independent third-party service providers.
+          ${footerLegalLinks()}
         </div>
       </footer>
     `;
@@ -3204,11 +3355,7 @@ function renderFooter(route) {
         </div>
         <div class="site-footer__legal">
           This site is an educational resource prepared by Vorvo Services. <strong>It is not legal advice and does not create an attorney-client relationship.</strong> Information is current as of the date of preparation; State procedures and document requirements may change without notice. Always follow the on-screen instructions on the official Comptroller portal. For case-specific legal questions, consult a licensed Texas attorney.
-          <div class="site-footer__legal-links">
-            <a href="#/client-agreement">Client Service Agreement</a>
-            <a href="#/terms">Terms of Service</a>
-            <a href="#/privacy">Privacy Policy</a>
-          </div>
+          ${footerLegalLinks()}
         </div>
       </footer>
     `;
@@ -3750,14 +3897,17 @@ function renderVorvoLanding() {
                 <textarea id="v-details" name="jobDetails" required></textarea>
               </div>
               <div class="field">
-                <label>Job Site Photos</label>
-                <div id="v-dropzone" style="border:1px dashed var(--rule-soft); padding:2rem; text-align:center; background:var(--paper-deep); cursor:pointer;">
-                  <span id="v-dropzone-text" class="text-small">Tap to upload photos or drag &amp; drop</span>
+                <label id="v-photos-label" for="v-photos">Job Site Photos (optional)</label>
+                <div id="v-dropzone" role="button" tabindex="0" aria-labelledby="v-photos-label v-dropzone-text" style="border:1px dashed var(--rule-soft); padding:2rem; text-align:center; background:var(--paper-deep); cursor:pointer;">
+                  <span id="v-dropzone-text" class="text-small" aria-live="polite">Tap to upload photos or drag &amp; drop</span>
                   <input type="file" id="v-photos" accept="image/*" multiple style="display:none;" />
                   <div id="v-preview-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(60px, 1fr)); gap:0.5rem; margin-top:1rem;"></div>
                 </div>
               </div>
               <button type="submit" class="btn btn--gold" style="width:100%;">Submit Request →</button>
+              <p class="form__legal-note" style="margin:1rem 0 0; font-size:0.8rem; line-height:1.5; color:var(--ink-mute);">
+                By submitting, you agree to our <a href="#/terms" style="color:var(--gold);">Terms of Service</a> and acknowledge our <a href="#/privacy" style="color:var(--gold);">Privacy Policy</a>. We'll use your information to respond to this request and may share job details with independent providers to get you quotes. Submitting a request doesn't obligate you to buy anything.
+              </p>
             </form>
             <div id="vorvo-success" class="form__success" style="display:none;"></div>
           </div>
@@ -4977,8 +5127,8 @@ function bindHandlers(route) {
           div.style.overflow = 'hidden';
           
           div.innerHTML = `
-            <img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;" />
-            <button type="button" class="btn-remove-photo" style="position:absolute; top:2px; right:2px; background:rgba(21,23,43,0.8); color:white; border:none; border-radius:50%; width:16px; height:16px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">×</button>
+            <img src="${e.target.result}" alt="Uploaded job site photo preview" style="width:100%; height:100%; object-fit:cover;" />
+            <button type="button" class="btn-remove-photo" aria-label="Remove photo" style="position:absolute; top:2px; right:2px; background:rgba(21,23,43,0.8); color:white; border:none; border-radius:50%; width:16px; height:16px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">×</button>
           `;
           
           div.querySelector('.btn-remove-photo').addEventListener('click', (ev) => {
@@ -4998,7 +5148,14 @@ function bindHandlers(route) {
     };
     
     dropzone?.addEventListener('click', () => fileInput.click());
-    
+    dropzone?.addEventListener('keydown', (e) => {
+      if (e.target !== dropzone) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
     dropzone?.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropzone.style.borderColor = 'var(--gold)';
@@ -7146,7 +7303,7 @@ function bindHandlers(route) {
                           <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.4rem;">
                             ${q.image_urls.map(url => `
                               <a href="${url}" target="_blank" title="View full photo" style="display:block; width:50px; height:50px; border:1px solid var(--rule-soft); border-radius:3px; overflow:hidden;">
-                                <img src="${url}" style="width:100%; height:100%; object-fit:cover;" />
+                                <img src="${url}" alt="Job site photo" style="width:100%; height:100%; object-fit:cover;" />
                               </a>
                             `).join('')}
                           </div>
@@ -7178,7 +7335,7 @@ function bindHandlers(route) {
                       ${q.contract_signature_data ? `
                         <div style="margin-top:0.5rem;">
                           <strong>Signature:</strong><br>
-                          <img src="${q.contract_signature_data}" style="border:1px solid var(--rule-soft); background:#fff; height:45px; display:block; margin-top:0.25rem;" />
+                          <img src="${q.contract_signature_data}" alt="Client signature" style="border:1px solid var(--rule-soft); background:#fff; height:45px; display:block; margin-top:0.25rem;" />
                         </div>
                       ` : ''}
                     </div>
